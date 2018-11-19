@@ -91,3 +91,66 @@ Hiện tại có 3 web server đang chiếm ưu thế đó là Apache , Microsof
 - Được thiết kế theo dạng module
 
 Nginx có thể được extend bởi nó support plug-ins. Bạn có thể build nginx từ source vì thế có thể loại bỏ một số module ko cần thiết.
+
+- Asynchronous Web Server
+
+Nginx có hiệu năng tốt là nhờ kiến trúc bất đồng bộ và  event-based. Khác với Apache và IIS, nginx ko xử lí các threads bằng kĩ thuật multithread trong lập trình, nó ko tạo từng thread riêng biệt cho mỗi request, thay vào đó, nó dựa vào events.
+
+- Có khả năng trở thành reverse proxy và load balancer
+
+Nginx có thể phân tích request dựa vào uri và quyết định hướng xử lí đối với req.
+
+- Sử dụng ít resource
+
+- Unparalleled Performance
+
+- Multiple Protocol Support: HTTP(S), WebSocket , IMAP , POP3 , SMTP
+
+- SSL Termination
+
+Secure Sockets Layer là rất cần thiết đối với mọi website. Kể từ khi mà nginx có thể hoạt động như một load balancer, bạn có thể configure ssl cho nó, điều này sẽ giảm thiểu request tới backend đằng sau.
+
+<img src="https://i.imgur.com/GVwB1Zr.png">
+
+- HTTP Video Streaming Using MP4/FLV/HDS/ HLS
+
+- Extended Monitoring and Logging
+
+- Graceful Restarting
+
+- Upgrades without Downtime Using Live Binaries
+
+- Enterprise Features of Nginx Plus
+
+
+### 4. Điểm khác biệt của Nginx và Apache?
+
+Nginx và Apache đều là nhũng web server rất mạnh mẽ. Cặp đôi này chiếm tới 70% trong top 1 triệu website hiện nay. Tuy nhiên chúng có những thứ khác nhau để ng dùng cân nhắc về việc lựa chọn:
+
+- Lịch sử:
+
+Apache Software Foundation (ASF) chính là đơn vị đứng đằng sau Apache. Apache được tung ra vào năm 1995 và được phát triển bởi ASF từ những năm 99. Apache vẫn là một thế lực lớn nhờ cộng đồng sử dụng rộng rãi.
+
+Trong khi đó, Nginx giống như một đứa trẻ mới chào đời kể từ năm 2008. Từ 2008 cho tới 2015, nó đã tăng trưởng từ 2% lên 21% trong top 1 triệu website.
+
+- Hiệu năng
+
+Đối với Apache, nó sử dụng multiprocessing modules (MPM) để kiểm soát cách mà request được xử lí. Bạn có thể chọn giữa  mpm_prefork, mpm_worker, mpm_event. Về cơ bản, mpm_prefork sẽ tạo ra các processes cho mỗi request, mpm_worker thì cũng tạo ra process nhưng những process này sẽ tạo ra các thread,  mpm_event thì cải thiện hơn hiệu năng của mpm_worker.
+
+Trong khi đó, Nginx được sinh ra để giải quyết vấn đề này. Nó sẽ tạo ra nhiều worker processes có thể quản lí cả nghìn request mỗi cái.
+
+ - Resource Requirements
+
+ Nginx dùng ít resource hơn.
+
+ - Availability
+
+ Apache có mặt trên hầu hết các hệ điều hành thông dụng hiện nay còn Nginx thì không. Với Apache, bạn chỉ cần 1 câu lệnh, còn với Nginx, bạn cần nhiều hơn thế.
+
+ - Proxy and Load Balancing Server
+
+ Khác với Nginx, Apache được thiết kế chỉ với mục đíhc làm webserver.
+
+ - Static vs. Dynamic Content
+
+Nginx có nhiều lợi thế hơn đối với dữ liệu tĩnh. Tuy nhiên với dữ liệu động thì Apache lại nhỉnh hơn nhờ built-int support cho PHP, Python hay Perl. Rõ ràng nếu bạn là Python, PHP hoặc Ruby developer thì lựa chọn Apache sẽ dễ dàng hơn.
