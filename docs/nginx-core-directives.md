@@ -63,11 +63,13 @@ main {
 }
 ```
 
+### 4. Tìm hiểu cấu hình mặc định
+
 Cấu hình mặc định của Nginx như sau:
 
 <img src="https://i.imgur.com/RFdgwhW.png">
 
-**Simple Directives**
+#### 4.1 Simple Directives
 
 Có thể gọi cả đoạn trên là main context. Có một vài simple directive trong main block:
 
@@ -76,7 +78,7 @@ Có thể gọi cả đoạn trên là main context. Có một vài simple direc
 - error_log: Có thể dử dụng trong nhiều context khác nhau. Trong ví dụ trên, nó được đặt ở main context. parameter thứ nhất là `/var/log/nginx/error.log` chỉ định path của file log. Trong khi đó parameter thứ 2 chỉ định rằng tất cả các log lớn hơn warning level đều sẽ được ghi lại.
 - pid: chỉ định file name sẽ lưu trữ process id của master process là `/var/run/nginx.pid`.
 
-**Events Context**
+#### 4.2 Events Context
 
 Sau các cấu hình mặc định là simple directive, bạn sẽ thấy `events context`. Context này chỉ được định ở trong main context và ở trong 1 file cấu hình nginx bạn chỉ được phép định nghĩa 1 event context
 
@@ -90,7 +92,7 @@ trong đó N là số lượng connections trung bình trong mỗi rq.
 - accept_mutex: mặc định là on, nó có nghĩa rằng worker process sẽ get request 1-1.
 -  accept_mutex_delay:  chỉ có tác dụng khi mà accept_mutex được bật. Nó sẽ chỉ định khoảng time tối đa mà worker process có thể đợi để chấp nhận 1 connection mới trước khi tạo ra proccess mới để thực thi request.
 
-**HTTP Context**
+#### 4.3 HTTP Context
 
 Mặc định, nó sẽ có 1 số directive sau:
 
@@ -122,7 +124,7 @@ video/x-m4v m4v;
 - gzip: mặc định là off, khi được bật, nó sẽ nén dữ liệu giúp giảm tải cho mỗi rq.
 - include: nó sẽ load các config được khai báo ở đường dẫn phía sau từ include.
 
-### 4. The conf.d Folder
+#### 4.4 The conf.d Folder
 
 Folder này có 2 file, `default.conf` và `example_ssl.conf`. Mặc định thì `example_ssl.conf` sẽ được comment toàn bộ trừ khi bạn muốn sử dụng ssl.
 
@@ -168,7 +170,7 @@ location = /50x.html {
 }
 ```
 
-**Server Context**
+#### 4.5. Server Context
 
 Nginx cho phép lựa chọn server cụ thể dựa vào request.
 
@@ -205,7 +207,7 @@ Lưu ý:
 - tạo ra thư mục `app1` và `app2` rồi tạo mẫu file html trong mỗi thư mục.
 - chạy câu lệnh restart nginx hoặc reload lại (nginx -s reload)
 
-#### Sẽ có những routing như sau:
+##### Sẽ có những routing như sau:
 
 - Nếu bạn truy cập `http://localhost` thì nginx sẽ trả về app1, tại vì nginx sẽ cố map với domain mà bạn khai báo (server_name). còn nếu bạn không đưa domain vào request thì nó sẽ map với block đầu tiên. Nếu bạn đổi port của app1 sang 81 và thực hiện lại request thì nginx sẽ trả về app2.
 
@@ -246,7 +248,7 @@ Hình sau mô tả quá trình routing
 
 <img src="https://i.imgur.com/VEIZQ66.png">
 
-**Location Context**
+#### 4.6. Location Context
 
 Cần lưu ý về `index`, đây sẽ là file mặc định gửi tới client nếu ko có cái gì được define. Ví dụ bạn add `index index.html index.htm` thì nginx sẽ hiểu là phải trả lại `index.html hoặc index.htm` nếu url chỉ là `http://app.com`
 
@@ -305,3 +307,123 @@ server {
   }
 }
 ```
+
+#### 4.7. Location Context Special case
+
+`try_files`
+
+Nó sẽ check xem file đã tồn tại trong thư mục hay chưa. Hãy xem ví dụ sau:
+
+
+```
+server {
+  listen 80;
+  server_name 127.0.0.1 localhost;
+  root /etc/nginx/html;
+
+  location ~* \.(jpg|jpeg)$ {
+      root /etc/nginx/html/common;
+  }
+  location ~* \.(png)$ {
+      root /etc/nginx/html/common;
+      try_files $uri $uri/ /nginx.png;
+  }
+}
+```
+
+Cả hai block trông khá giống nhau, cùng apply một rule đối với các định dạng jpeg và png. Tuy nhiên ở block thứ 2 có `try_files`. Nó sẽ tìm kiếm trong `$uri`, nếu ko có nó sẽ chuyển qua `$uri/`. Nếu vẫn không có, nó sẽ trả về `/nginx.png`
+
+`rewrite`
+
+Rewrite directive có thể redirect request của bạn. Nó hỗ trợ các flag parameter sau:
+
+- `last` : Dừng process hiện tại và bắt đầu tìm kiếm location mới match với url đã được thay đổi
+- `break` : Dừng tiến trình
+- `redirect` redirect tạm thời sử dụng status code 302
+- `permanent` redirect dài hạn sử dụng status code 301
+
+Ở một số trường hợp cụ thể ví dụ như việc thay đổi ở phía backend hoặc thay đổi framework làm cho `rewrite` hữu ích hơn. Ví dụ như cấu trúc thư mục của bạn đã thay đổi và `common` bây giờ được chuyển thành `vendor_assets`
+
+```
+server {
+      listen 80;
+      server_name 127.0.0.1 localhost;
+      root /etc/nginx/html;
+
+      location /common/ {
+          rewrite ^(/common/)(.*) /vendor_assets/$2 last;
+      }
+}
+```
+
+- `error_page`
+
+`error_page` giúp nginx trả lại một error page sử dụng internal redirect.
+
+```
+error_page 404 /404_not_found.html;                 #Applies to status code 404.
+error_page 500 502 503 504 /50x_server_error.html;  #Applies to status code 500, 502, 503 & 504.
+error_page 404 =200 /funnypic.png;                  #Instead of sending 404, it will send a png with status code 200.
+```
+
+#### 4.8. Kiểm tra cấu hình
+
+Option `-t` và `-c` được sử dụng để check cấu hình của nginx
+
+`nginx -t -c /etc/nginx/nginx.conf`
+
+#### 4.9. Allow Directory Listing
+
+Việc Listing Directory được disable mặc định, để sử dụng, bạn phải có directive `autoindex`:
+
+```
+server {
+    listen 80;
+    server_name 127.0.0.1 localhost;
+    root /etc/nginx/html;
+
+    location /common/ {
+        root /etc/nginx/html;
+        index NON_EXISTENT_FILE;
+        autoindex on;
+    }
+}
+```
+
+#### 4.10. Deny Access to Any Specific Location
+
+```
+server {
+      listen 80;
+      server_name 127.0.0.1 localhost;
+      root /etc/nginx/html;
+      location /vendor_assets/ {
+          deny all;
+      }
+}
+```
+
+Truy cập `http://localhost/vendor_assets/` -> bạn sẽ nhận được 403
+
+### 5. Nginx Variables
+
+Nginx có một số biến rất tiện dụng, tuy nhiên ko nên sử dụng nó một cách bừa bãi. Lý do là bởi nó sẽ được cpu evaluated real time nên có thể sẽ gây ảnh hưởng tới máy chủ nếu dùng quá nhiều.
+
+Ví dụ, chỉnh sửa file `nginx.conf`:
+
+`log_format main '$remote_addr - $remote_user [$time_local] "$request" '' $status $body_bytes_sent "$http_referer"';`
+
+Tạo thử một request, truy cập vào file log `/var/log/nginx/access.log`
+
+
+`127.0.0.1 - - [14/Sep/2015:06:18:22 -0400] "GET / HTTP/1.1" 200 23 "-"`
+
+Bạn có thể lấy thêm một số thông tin
+
+`log_format main '$remote_addr - $remote_user [$time_local] "$document_root$document_uri"'
+'"$request" $status $body_bytes_sent "$http_referer"';`
+
+Và đây là log bạn nhận được
+
+`127.0.0.1 - - [14/Sep/2015:06:25:48 -0400] "/home/nginx_new_home/index.html""GET / HTTP/1.1"
+200 23 "-"`
